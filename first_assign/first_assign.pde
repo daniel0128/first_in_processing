@@ -1,4 +1,4 @@
-//import g4p_controls.*;
+import g4p_controls.*;
 String[] headers;
 float[][] values;
 String[] names;
@@ -11,13 +11,15 @@ float blankY;
 float canvasL = width*.95;
 float canvasH = height*.9;
 float[][] limits;
-//GCustomSlider[] sldrs;
+GCustomSlider[][] sldrs;
 
 void setup(){
   size(768,768);
   //load table
   selectInput("Select a file to process:", "fileSelected");
-  //createGUI();
+  G4P.messagesEnabled(false);
+  G4P.setGlobalColorScheme(GCScheme.BLUE_SCHEME);
+  G4P.setCursor(ARROW);
 }
 void fileSelected(File selection) {
   if (selection == null) {
@@ -43,13 +45,13 @@ void fileSelected(File selection) {
     for(int i=0;i<limits.length;i++){
       limits[i] = getMaxAndMin(values[i]);
     }
-    //sldrs = new GCustomSlider[columnCount];
-  canvasL = width*.95;
-  canvasH = height*.9;
-  matrixL = canvasL/columnCount *.95;
-  matrixH = canvasH/columnCount *.95;
-  blankX = canvasL/columnCount *.04;
-  blankY = canvasH/columnCount *.04;
+    //sldrs = new GCustomSlider[columnCount][2];
+    canvasL = width*.95;
+    canvasH = height*.9;
+    matrixL = canvasL/columnCount *.95;
+    matrixH = canvasH/columnCount *.95;
+    blankX = canvasL/columnCount *.04;
+    blankY = canvasH/columnCount *.04;
   }
 }
 void draw(){
@@ -57,50 +59,75 @@ void draw(){
   background(255);
   //boolean markX,markY;
   //scatter matrix:
-  for(int i=0;i<columnCount;i++){
-   for (int j=0;j<columnCount;j++){
-      if(i==columnCount-1){// markX
-       for(int k = 0;k<5;k++){
+  if(columnCount==2){
+    //scatterPlot(float[] columnX, float[] columnY,float len,float high, float chartX, float chartY){
+    //stroke(0);
+    //rect(blankX,blankY,canvasL*.95,canvasH*.95);
+    float scatterL=canvasL*.95;
+    float scatterH=canvasH*.95;
+    line(blankX,blankY,blankX+canvasL*.95,blankY);
+    line(blankX+canvasL*.95,blankY,blankX+canvasL*.95,blankY+canvasH*.95);
+    scatterPlot(values[0],values[1],canvasL*.95,canvasH*.95,blankX,blankY+canvasH*.95);
+    for(int k=0;k<5;k++){
+      stroke(0);
+     line((float)k/5*scatterL+blankX,canvasH-2*blankY+3,(float)k/5*scatterL+blankX,canvasH-2*blankY+5);
+     line(scatterL+blankX+3,(float)(k+1)/5*scatterH,scatterL+blankX+5,(float)(k+1)/5*scatterH);
+     fill(0);
+     textSize(10);
+     float numX =((float)k/5*(float)Math.ceil(limits[0][0]-limits[0][1])+limits[0][1]);
+     float numY =((float)k/5*(float)Math.ceil(limits[1][0]-limits[1][1])+limits[1][1]);
+     text( numX,(float)k/5*scatterL+blankX-3,canvasH-blankY+15);
+     text( numY,canvasL-blankX+7,(float)(k+1)/5*scatterH+blankY);
+    }
+  }
+  else{
+    for(int i=0;i<columnCount;i++){
+      //sldrs[i][0] = new GCustomSlider(this, blankX+i*(blankX+matrixL),height*.93,matrixL,20, "blue18px");
+      //sldrs[i][1] = new GCustomSlider(this, blankX+i*(blankX+matrixL),height*.97,matrixL,20, "blue18px"); 
+     for (int j=0;j<columnCount;j++){
+        if(i==columnCount-1){// markX
+         for(int k = 0;k<5;k++){
+           stroke(0);
+           line((float)k/5*matrixL+blankX+j*(blankX+matrixL),canvasH-blankY+3,(float)k/5*matrixL+blankX+j*(blankX+matrixL),canvasH-blankY+5);
+           fill(0);
+           textSize(10);
+           int num =(int)((float)k/5*(float)Math.ceil(limits[i][0]-limits[i][1])+limits[i][1]);
+           text( num,(float)k/5*matrixL+blankX+j*(blankX+matrixL)-3,canvasH-blankY+15);
+         }
+       }
+       if(j==columnCount-1){
+         for(int k = 0;k<5;k++){
+           stroke(0);
+           line(canvasL-blankX+3,(float)(k+1)/5*matrixH+blankY+i*(blankY+matrixH),canvasL-blankX+5,(float)(k+1)/5*matrixH+blankY+i*(blankY+matrixH));
+           fill(0);
+           textSize(10);
+           int num = (int)((float)k/5*Math.ceil(limits[i][0]-limits[i][1])+limits[i][1]);
+           text( num,canvasL-blankX+7,(float)(k+1)/5*matrixH+blankY+i*(blankY+matrixH));
+         }
+       }
+       if(mouseX>blankX+j*(blankX+matrixL)&&mouseX<blankX+j*(blankX+matrixL)+matrixL &&
+       mouseY > blankY+i*(blankY+matrixH)&&mouseY<blankY+i*(blankY+matrixH)+matrixH){
+         fill(255,255,255);
+         stroke(255,0,0);
+       }else{
          stroke(0);
-         line((float)k/5*matrixL+blankX+j*(blankX+matrixL),canvasH-blankY+3,(float)k/5*matrixL+blankX+j*(blankX+matrixL),canvasH-blankY+5);
-         fill(0);
-         textSize(10);
-         float num =((float)k/5*(float)Math.ceil(limits[i][0]-limits[i][1])+limits[i][1]);
-         text( num,(float)k/5*matrixL+blankX+j*(blankX+matrixL)-3,canvasH-blankY+15);
+         fill(255,255,255,0);
+       }  
+       rect(blankX+j*(blankX+matrixL),blankY+i*(blankY+matrixH),matrixL,matrixH);
+       if(i==j){
+         if(2*rowCount<matrixL-2){
+           barChart(values[i],matrixL,matrixH,blankX+j*(blankX+matrixL),(i+1)*(blankY+matrixH));
+            fill(0);
+         }else 
+           fill(0);
+         textSize(18);
+         text(headers[i+1],blankX+j*(blankX+matrixL)+.2*matrixL,blankY+i*(blankY+matrixH)+.2*matrixH);
+       }else {
+         scatterPlot(values[j],values[i],matrixL,matrixH,blankX+j*(blankX+matrixL),(i+1)*(blankY+matrixH));
+         textSize(12);
        }
      }
-     if(j==columnCount-1){
-       for(int k = 0;k<5;k++){
-         stroke(0);
-         line(canvasL-blankX+3,(float)(k+1)/5*matrixH+blankY+i*(blankY+matrixH),canvasL-blankX+5,(float)(k+1)/5*matrixH+blankY+i*(blankY+matrixH));
-         fill(0);
-         textSize(10);
-         int num = (int)((float)k/5*Math.ceil(limits[i][0]-limits[i][1])+limits[i][1]);
-         text( num,canvasL-blankX+7,(float)(k+1)/5*matrixH+blankY+i*(blankY+matrixH));
-       }
-     }
-     if(mouseX>blankX+j*(blankX+matrixL)&&mouseX<blankX+j*(blankX+matrixL)+matrixL &&
-     mouseY > blankY+i*(blankY+matrixH)&&mouseY<blankY+i*(blankY+matrixH)+matrixH){
-       fill(255,255,255);
-       stroke(255,0,0);
-     }else{
-       stroke(0);
-       fill(255,255,255,0);
-     }  
-     rect(blankX+j*(blankX+matrixL),blankY+i*(blankY+matrixH),matrixL,matrixH);
-     if(i==j){
-       if(2*rowCount<matrixL-2){
-         barChart(values[i],matrixL,matrixH,blankX+j*(blankX+matrixL),(i+1)*(blankY+matrixH));
-          fill(0);
-       }else 
-         fill(0);
-       textSize(18);
-       text(headers[i+1],blankX+j*(blankX+matrixL)+.2*matrixL,blankY+i*(blankY+matrixH)+.1*matrixH);
-     }else {
-       scatterPlot(values[j],values[i],matrixL,matrixH,blankX+j*(blankX+matrixL),(i+1)*(blankY+matrixH));
-       textSize(12);
-     }
-   }
+    }
   }
 }
 
@@ -167,6 +194,6 @@ float[] getMaxAndMin(float[] data){
  }
  return result;
 }
-//void handleSliderEvents(GSlider slider) {
-//  println("integer value:" + slider.getValueI() + " float value:" + slider.getValueF());
-//}
+void handleSliderEvents(GSlider slider) {
+  println("integer value:" + slider.getValueI() + " float value:" + slider.getValueF());
+}
